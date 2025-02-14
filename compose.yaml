@@ -1,0 +1,89 @@
+services:
+  kafka:
+    # https://hub.docker.com/r/bitnami/kafka
+    image: bitnami/kafka:3.4
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      # A cluster ID does not need to be provided for a single-node configuration,
+      # but all nodes in a single cluster should have the same cluster ID.
+      - KAFKA_KRAFT_CLUSTER_ID=228f04bc-0895-11ee-be56-0242ac120002
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_process.roles
+      #
+      # The roles that this process plays: 'broker', 'controller', or 'broker,controller' if it is both.
+      # This configuration is only applicable for clusters in KRaft (Kafka Raft) mode (instead of ZooKeeper).
+      # It needs to act as both a broker and a controller for a single-node setup.
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_controller.listener.names
+      #
+      # A comma-separated list of the names of the listeners used by the controller.
+      # This is required if running in KRaft mode. When communicating with the controller quorum,
+      # the broker will always use the first listener in this list.
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_listeners
+      # Comma-separated list of URIs we will listen on and the listener names.
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_listener.security.protocol.map
+      #
+      # Maps the listener names to their corresponding security protocols.
+      # All are set to PLAINTEXT for simplicity in a local setup.
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_advertised.listeners
+      #
+      # Specifies the addresses that Kafka will advertise to clients for connection.
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094
+
+      # Assigns a unique ID to this broker. For single-node setups, it can be any unique value.
+      - KAFKA_BROKER_ID=1
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_controller.quorum.voters
+      #
+      # Configures the controller quorum voters for KRaft. Since it's a single-node setup,
+      # only this node (ID 1) is listed, and it uses the CONTROLLER listener address.
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
+
+      # Allows the use of PLAINTEXT listeners, which do not require authentication or encryption.
+      # This is essential for simple local setups but should not be used in production.
+      - ALLOW_PLAINTEXT_LISTENER=yes
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_node.id
+      #
+      # Specifies the node ID for this Kafka instance, matching the controller quorum voter ID.
+      # This is crucial for the node to correctly identify itself in the cluster.
+      - KAFKA_CFG_NODE_ID=1
+
+      # Enables automatic creation of topics when a client references a nonexistent topic.
+      # This is convenient for development but is often disabled in production.
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+
+      # https://kafka.apache.org/32/generated/kafka_config.html#brokerconfigs_num.partitions
+      #
+      # Sets the default number of partitions for newly created topics.
+      - KAFKA_CFG_NUM_PARTITIONS=2
+
+      # Enables additional logging
+      # - BITNAMI_DEBUG=yes
+
+#  kafka-ui:
+#    container_name: kafka-ui
+#    image: provectuslabs/kafka-ui:v0.7.0
+#    depends_on:
+#      - kafka
+#    ports:
+#      - 8080:8080
+#    environment:
+#      DYNAMIC_CONFIG_ENABLED: 'true'
+#      # LOGGING_LEVEL_ROOT: 'DEBUG'
+#    volumes:
+#      - /c/tools/kafka/kui/config.yml:/etc/kafkaui/dynamic_config.yaml
+
+volumes:
+  kafka_data:
