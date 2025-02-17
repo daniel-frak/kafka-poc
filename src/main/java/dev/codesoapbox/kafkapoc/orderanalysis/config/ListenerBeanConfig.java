@@ -1,4 +1,4 @@
-package dev.codesoapbox.kafkapoc.orderanalysis;
+package dev.codesoapbox.kafkapoc.orderanalysis.config;
 
 import dev.codesoapbox.kafkapoc.orderanalysis.adapters.driven.kafka.EnrichedOrderListener;
 import dev.codesoapbox.kafkapoc.orderanalysis.adapters.driven.kafka.OrderListener;

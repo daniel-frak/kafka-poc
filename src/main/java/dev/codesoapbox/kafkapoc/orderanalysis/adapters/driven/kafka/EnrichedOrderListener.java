@@ -9,7 +9,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 @Slf4j
 public class EnrichedOrderListener {
 
-    private static final String TOPIC = "enriched-orders";
+    public static final String TOPIC = "enriched-orders";
 
     @KafkaListener(id = "enriched-order-listener-1", topics = TOPIC)
     public void listen(@Payload EnrichedOrder enrichedOrder,

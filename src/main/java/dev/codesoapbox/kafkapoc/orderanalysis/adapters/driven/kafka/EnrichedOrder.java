@@ -6,6 +6,6 @@ import java.util.List;
 
 public record EnrichedOrder(
         String orderId,
-        List<Product> productIds
+        List<Product> products
 ) {
 }
