@@ -1,6 +1,6 @@
 package dev.codesoapbox.kafkapoc.orderanalysis.adapters.driving.http;
 
-import dev.codesoapbox.kafkapoc.orderanalysis.adapters.driven.kafka.ProductSalesInfoKTable;
+import dev.codesoapbox.kafkapoc.orderanalysis.adapters.driven.kafka.HourlyProductSalesInfoKTable;
 import dev.codesoapbox.kafkapoc.orderanalysis.application.ProductSalesInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +15,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderedProductInfoController {
 
-    private final ProductSalesInfoKTable productSalesInfoKTable;
+    private final HourlyProductSalesInfoKTable hourlyProductSalesInfoKTable;
 
     @GetMapping("{productId}")
     public Optional<ProductSalesInfo> getProductSalesInfo(@PathVariable long productId) {
-        return productSalesInfoKTable.getProductSalesInfo(productId);
+        return hourlyProductSalesInfoKTable.getProductSalesInfo(productId);
     }
 }

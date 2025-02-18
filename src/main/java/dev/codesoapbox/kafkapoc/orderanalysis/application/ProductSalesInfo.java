@@ -1,10 +1,7 @@
 package dev.codesoapbox.kafkapoc.orderanalysis.application;
 
 import dev.codesoapbox.kafkapoc.ordering.application.domain.Product;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -12,6 +9,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
+@ToString
 public class ProductSalesInfo {
 
     private long productId;

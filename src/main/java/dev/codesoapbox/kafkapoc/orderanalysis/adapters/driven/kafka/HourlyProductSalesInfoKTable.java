@@ -10,22 +10,27 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.WindowStore;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.kafka.support.serializer.JsonSerde;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class ProductSalesInfoKTable {
+public class HourlyProductSalesInfoKTable {
 
-    protected static final String PRODUCT_SALE_INFO_STORE_NAME = "product-sales-info";
+    protected static final String STORE_NAME = "product-sales-info-hourly";
+    protected static final Duration WINDOW_SIZE = Duration.ofHours(1);
+    protected static final Duration WINDOW_GRACE = Duration.ofMinutes(5);
+
     private final StreamsBuilderFactoryBean kafkaStreamsFactory;
 
-    public static KTable<Long, ProductSalesInfo> build(StreamsBuilder kStreamBuilder) {
+    public static KTable<Windowed<Long>, ProductSalesInfo> build(StreamsBuilder kStreamBuilder) {
         KStream<String, EnrichedOrder> enrichedOrderStream = kStreamBuilder.stream(EnrichedOrderListener.TOPIC);
-        KGroupedStream<Long, Product> productsByProductId = getProductsByProductId(enrichedOrderStream);
+        TimeWindowedKStream<Long, Product> productsByProductId = getProductsByProductId(enrichedOrderStream)
+                .windowedBy(TimeWindows.ofSizeAndGrace(WINDOW_SIZE, WINDOW_GRACE));
         return aggregateProductSales(productsByProductId);
     }
 
@@ -38,13 +43,13 @@ public class ProductSalesInfoKTable {
                 .groupByKey(Grouped.with(Serdes.Long(), new JsonSerde<>(Product.class)));
     }
 
-    private static KTable<Long, ProductSalesInfo> aggregateProductSales(
-            KGroupedStream<Long, Product> productsByProductId) {
+    private static KTable<Windowed<Long>, ProductSalesInfo> aggregateProductSales(
+            TimeWindowedKStream<Long, Product> productsByProductId) {
         return productsByProductId
                 .aggregate(ProductSalesInfo::new,
                         (key, value, aggregate) -> aggregate.process(key, value),
-                        Materialized.<Long, ProductSalesInfo, KeyValueStore<Bytes, byte[]>>
-                                        as(PRODUCT_SALE_INFO_STORE_NAME)
+                        Materialized.<Long, ProductSalesInfo, WindowStore<Bytes, byte[]>>
+                                        as(STORE_NAME)
                                 .withKeySerde(Serdes.Long())
                                 .withValueSerde(new JsonSerde<>(ProductSalesInfo.class)));
     }
@@ -55,7 +60,7 @@ public class ProductSalesInfoKTable {
             return Optional.empty();
         }
         ProductSalesInfo storeValue = kafkaStreams
-                .store(StoreQueryParameters.fromNameAndType(PRODUCT_SALE_INFO_STORE_NAME,
+                .store(StoreQueryParameters.fromNameAndType(STORE_NAME,
                         QueryableStoreTypes.<Long, ProductSalesInfo>keyValueStore()))
                 .get(productId);
 

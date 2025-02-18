@@ -1,9 +1,10 @@
 package dev.codesoapbox.kafkapoc.orderanalysis.config;
 
-import dev.codesoapbox.kafkapoc.orderanalysis.adapters.driven.kafka.ProductSalesInfoKTable;
+import dev.codesoapbox.kafkapoc.orderanalysis.adapters.driven.kafka.HourlyProductSalesInfoKTable;
 import dev.codesoapbox.kafkapoc.orderanalysis.application.ProductSalesInfo;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Windowed;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
@@ -14,12 +15,12 @@ import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 public class KafkaStreamConfig {
 
     @Bean
-    ProductSalesInfoKTable productSalesInfoKTable(StreamsBuilderFactoryBean kafkaStreamsFactory) {
-        return new ProductSalesInfoKTable(kafkaStreamsFactory);
+    HourlyProductSalesInfoKTable productSalesInfoKTable(StreamsBuilderFactoryBean kafkaStreamsFactory) {
+        return new HourlyProductSalesInfoKTable(kafkaStreamsFactory);
     }
 
     @Bean
-    KTable<Long, ProductSalesInfo> enrichedOrderKStream(StreamsBuilder kStreamBuilder) {
-        return ProductSalesInfoKTable.build(kStreamBuilder);
+    KTable<Windowed<Long>, ProductSalesInfo> enrichedOrderKStream(StreamsBuilder kStreamBuilder) {
+        return HourlyProductSalesInfoKTable.build(kStreamBuilder);
     }
 }
